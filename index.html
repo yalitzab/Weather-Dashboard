@@ -23,7 +23,28 @@
             <i class="material-icons">wb_sunny</i>&nbsp;Weather Dashboard</a>
     </nav>
 
-
+    <div class="container">
+        <div class="row mt-3">
+            <div class="col-md-3 searchbox">
+                <h2 class="text-secondary">Search for a city: </h2>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="searchinput" type="search" aria-label="Search">
+                    <div class="input-group-append">
+                        <button class="btn btn-primary" id="searchbtn" type="submit">
+                            <i class="material-icons">search</i>
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-5" id="pastSearches">
+                    <!-- Buttons for past searches here -->
+                </div>
+            </div>
+            <div class="col-md-9">
+                <div class="container" id="earthforecast">
+                 </div>
+            </div>        
+        </div>
+    </div>
 
     <!--Script, jquery, bootstrap, moment links -->
     <script src="https://code.jquery.com/jquery-3.4.1.min.js"
