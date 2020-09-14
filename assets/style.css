@@ -3,12 +3,18 @@
 .searchbox {
     background-color: #e6f2ff;
     padding: 20px;
-    
 }
 
 #searchbtn{
     padding: 6px 5px 0px 5px;
-
 }
+
+.forecast {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px 0px;
+}
+
 
 /* font-family: Arial, Helvetica, sans-serif; */

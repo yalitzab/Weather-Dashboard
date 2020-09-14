@@ -13,7 +13,7 @@ $("#searchbtn").on("click", function(){
     // if loc was not empty
     if (loc !==""){
         // clear previous forecast 
-        // clear();
+        clear();
         currentLoc = loc;
         saveLoc(loc);
         // clear search field 
@@ -23,13 +23,6 @@ $("#searchbtn").on("click", function(){
     }
 });
 
-// $(document).on("click", "#searchbtn", function () {
-//     // clear();
-//     // currentLoc = $(this).text();
-//     saveCity()
-//     getCurrent(city);
-//     console.log()
-// });
 
 
 // Current city weather function
@@ -82,7 +75,7 @@ function getCurrent(city){
         // UV Index
         var uvURL = "http://api.openweathermap.org/data/2.5/uvi?appid=e6dee304a0d16335ecee688e3c6dc7e4&lat=" + response.coord.lat + "&lon=" + response.coord.lat;
         fetch(uvURL).then(function(response){
-
+            return response.json();
         })
         .then(function(uvresponse){
             var uvindex = uvresponse;
@@ -93,27 +86,38 @@ function getCurrent(city){
             else if (uvindex >= 3 || uvindex <= 6){
                 bgcolor = "yellow";
             }
-            else if (uvindex >= 6 || uvindex <= 8 ){
+            else if (uvindex >= 6 || uvindex <= 8){
                 bgcolor = "orange";
             }
             else {
                 bgcolor = "red";
             }
             var uvdisp = $("<p>").attr("class", "card-text").text("UV Index: ");
-            uvdisp.append($("<span>").attr("class", "uvindex").attr("style", ("background-color:" + bgcolor)).text(uvindex));
+            uvdisp.append($("<div>").attr("class", "uvindex").attr("style", ("background-color:" + bgcolor)).text(uvindex));
             cardBody.append(uvdisp);
-        })
+        });
         cardRow.append(textDiv);
         getForecast(response.id);
-        console.log(uvURL)
+        // console.log(uvURL)
     })
 }
 
-// getCurrent();
+function success(position) {
+    var lat = position.coords.latitude;
+    var lon = position.coords.longitude;
+    var queryURL = "https://api.openweathermap.org/data/2.5/weather?lat=" + lat + "&lon=" + lon + "&APPID=e6dee304a0d16335ecee688e3c6dc7e4";
+    fetch(queryURL).then(function(response){
+        return response.json()
+    }).then(function (response) {
+        currentLoc = response.name;
+        saveLoc(response.name);
+        getCurrent(currentLoc);
+    });
+}
 
 
+// get 5 day forecast function
 function getForecast(city){
-    // get 5 day forecast
     var queryURL = "http://api.openweathermap.org/data/2.5/forecast?id=" + city + "&APPID=e6dee304a0d16335ecee688e3c6dc7e4&units=imperial";
     fetch(queryURL).then(function(response){
         return response.json();
@@ -125,12 +129,12 @@ function getForecast(city){
         for (var i = 0; i < response.list.length; i++){
             if (response.list[i].dt_txt.indexOf("15:00:00") !== -1){
 
-                var colElem = $('<div>').attr("class", "col-md-2")
+                var colElem = $('<div>').attr("class", "col-lg-2")
                 var newCard = $('<div>').attr('class', 'card text-white bg-primary');
                 var cardHead = $('<div>').attr('class', 'card-header').text(moment(response.list[i].dt, "X").format("MMM Do"));
                 var cardImg = $("<img>").attr("src", "https://openweathermap.org/img/w/" + response.list[i].weather[0].icon + ".png");
-                // var bodyDiv = $('<div>').attr("class", "card-body");
-                var newCol = $('<div>').attr('class', 'one-fifth')
+                var bodyDiv = $('<div>').attr("class", "card-body");
+                // var newCol = $('<div>').attr('class', 'one-fifth')
                 
                 newCard.append(cardHead)
                 newCard.append(cardImg)
@@ -147,8 +151,12 @@ function getForecast(city){
 
 }
 
+//clear all the weather
+function clear() {
+    $("#earthforecast").empty();
+}
 
-
+// save locations
 function saveLoc(loc){
     //add this to the saved locations array
     if (savedLocations === null) {
@@ -159,23 +167,22 @@ function saveLoc(loc){
     }
     //save to localstorage
     localStorage.setItem("weathercities", JSON.stringify(savedLocations));
-    
+    showPrevious();
 }
 
-
+// get prevous location from local storage
 function saveCity(){
-    // get prevous location from local storage
     savedLocations = JSON.parse(localStorage.getItem("weathercities"));
     var lastSearch;
     // display buttons for previous searches
     if (savedLocations){
         currentLoc = savedLocations[savedLocations.length - 1];
-        // showPrevious();
+        showPrevious();
         getCurrent(currentLoc);
     }
     else{
         if (!navigator.geolocation){
-            getCurrent("");
+            getCurrent("Raleigh");
         }
         else{
             navigator.geolocation.getCurrentPosition(success, error);
@@ -187,6 +194,26 @@ function saveCity(){
 function showPrevious() {
     //show the previously searched for locations based on what is in local storage
     if (savedLocations) {
-        
+        $("#prevSearches").empty();
+        var btns = $("<div>").attr("class", "list-group");
+        for (var i = 0; i < savedLocations.length; i++) {
+            var locBtn = $("<a>").attr("href", "#").attr("id", "loc-btn").text(savedLocations[i]);
+            if (savedLocations[i] == currentLoc){
+                locBtn.attr("class", "list-group-item list-group-item-action active");
+            }
+            else {
+                locBtn.attr("class", "list-group-item list-group-item-action");
+            }
+            btns.prepend(locBtn);
+        }
+        $("#prevSearches").append(btns);
     }
 }
+
+// saved locations button on click
+$(document).on("click", "#loc-btn", function () {
+    clear();
+    currentLoc = $(this).text();
+    showPrevious();
+    getCurrent(currentLoc);
+});
